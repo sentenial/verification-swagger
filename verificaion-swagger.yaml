@@ -1,0 +1,836 @@
+openapi: 3.0.1
+info:
+  title: Nuapay Verification Service API Specification
+  description: Swagger Spec for the Nuapay TPP Verification Service.
+  contact:
+    name: Nuapay
+    email: api.support@nuapay.com
+  license:
+    name: Nuapay
+    url: https://sentenial.com
+  version: 1.0.0
+  x-logo:
+    backgroundColor: '#FFFFFF'
+    url: https://www.nuapay.com/wp-content/uploads/2018/04/nuapay.svg
+servers:
+  - url: https://api.nuapay.com
+tags:
+  - name: Verification Service
+    description: |-
+      Verification Service is a Nuapay product that allows Merchant to verify provided account holder name with details delivered by ASPSP.
+      The Account Information endpoints allow a Merchant to,
+      - Initiate verification requests in Verification Service
+      - Update verification with user consent
+      - List initiated verifications with filtering
+      - Retrieve the verification results
+paths:
+  /verifications:
+    get:
+      tags:
+        - Verification Service
+      summary: List Verifications
+      description: |-
+        Get Verification List Endpoint.
+        It is used to list verifications that are initiated by Merchant.
+        List may be filtered by parameters and supports paination.
+      operationId: getVerificationListUsingGET
+      parameters:
+        - name: fromdatetime
+          in: query
+          description: Created from date time in the format, 'yyyy-MM-dd'T'HH:mm:ss',
+            maximum date from/to date range is 30 days. If neither from/to date is provided
+            returns results for the last 30 days.
+          schema:
+            type: string
+        - name: todatetime
+          in: query
+          description: Created to date time in the format, 'yyyy-MM-dd'T'HH:mm:ss',
+            maximum date from/to date range is 30 days. If neither from/to date is provided
+            returns results for the last 30 days.
+          schema:
+            type: string
+        - name: userinterfaceverificationid
+          in: query
+          description: UUID representing the verification.
+          schema:
+            type: string
+          required: false
+        - name: status
+          in: query
+          description: The latest verification status.
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+              - PENDING
+              - IN_PROGRESS
+              - COMPLETE
+              - FAILED
+          required: false
+        - name: name
+          in: query
+          description: |-
+            Name that was used as an input parameter for verification.
+            This parameter supports searching with partial string (%LIKE%).
+          schema:
+            type: string
+          required: false
+        - name: pagenumber
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            format: int32
+            default: 1
+        - name: pagesize
+          in: query
+          description: |-
+            Page size.
+            Max allowed value = 100
+          schema:
+            type: integer
+            format: int32
+            default: 20
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedListVerificationResponseEnvelope'
+              example:
+                uri: /verifications
+                data:
+                 - id: re27gry2dw
+                   userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
+                   uri: /verifications/re27gry2dw
+                   organisationId: ybo8z7vn2q
+                   countryCode: DE
+                   language: en
+                   email: john.leaf@mail.com
+                   integrationType: CHECKOUT
+                   merchantPostAuthUrl: https://merchant.openbanking.com/result
+                   creationDateTime: "2022-05-01T08:25:29.291Z"
+                   method: AIS
+                   status: PENDING
+                   data:
+                    name: John Leaf
+                   results: null
+                   links: []
+                page:
+                   pageNumber: 1
+                   pageSize: 10
+                   totalElements: 1
+                   totalPages: 1
+                sort: []
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: "VS0000"
+                returnDescription: Validation errors occurred. Please see details.
+                details:
+                  code: "VS0002"
+                  description: Field is invalid
+                  field: userinterfaceverificationid
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        405:
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        422:
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: "VS0002"
+                returnDescription: Validation errors occurred. Please see details.
+                details:
+                  code: "VS0002"
+                  description: Max page size is exceeded
+                  field: pagesize
+        429:
+          description: Too Many Requests
+          headers:
+            Retry-After:
+              description: Number in seconds to wait
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+          x-sentenial:
+            enriched: 'true'
+      security:
+        - MerchantOAuth2:
+            - verifications
+        - MerchantApiKey: []
+        - SystemOAuth2:
+          - verifications
+    post:
+      tags:
+        - Verification Service
+      summary: Verification Request Post Endpoint
+      description: |-
+        Verification Request Post Endpoint.
+        It is used to initiate verification.
+        Initited verifications has PENDING status.
+        In this status verification results are not available yet.
+      operationId: verifyUsingPOST
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          description: |-
+            Every request will be processed only once per Idempotency-Key.
+            The Idempotency Key will be valid for 24 hours.
+          schema:
+            type: string
+          x-sentenial:
+            enriched: 'true'
+      requestBody:
+        description: Create Verification Request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequestResponseEnvelope'
+              example:
+                uri: /verifications
+                data:
+                 id: re27gry2dw
+                 userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
+                 uri: /verifications/re27gry2dw
+                 organisationId: ybo8z7vn2q
+                 countryCode: DE
+                 language: en
+                 email: john.leaf@mail.com
+                 integrationType: CHECKOUT
+                 merchantPostAuthUrl: https://merchant.openbanking.com/result
+                 creationDateTime: "2022-05-01T08:25:29.291Z"
+                 method: AIS
+                 status: PENDING
+                 data:
+                  name: John Leaf
+                 results: {}
+                 links: []
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: "VS0000"
+                returnDescription: Validation errors occurred. Please see details.
+                details:
+                  code: "VS0002"
+                  description: Field is invalid
+                  field: email
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        405:
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        415:
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        422:
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        429:
+          description: Too Many Requests
+          headers:
+            Retry-After:
+              description: Number in seconds to wait
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+          x-sentenial:
+            enriched: 'true'
+      security:
+        - MerchantOAuth2:
+            - verifications
+        - MerchantApiKey: []
+  /verifications/{verificationId}:
+    get:
+      tags:
+        - Verification Service
+      summary: Retrieve Verification Request
+      description: |-
+        GET verification request Endpoint.
+        It is used to retrieve verification details.
+      operationId: getVerificationRequestUsingGET
+      parameters:
+      - name: verificationId
+        in: path
+        description: Verification request ID
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequestResponseEnvelope'
+              example:
+                uri: /verifications/re27gry2dw
+                data:
+                  id: re27gry2dw
+                  userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
+                  uri: /verifications/re27gry2dw
+                  organisationId: ybo8z7vn2q
+                  countryCode: DE
+                  language: en
+                  email: john.leaf@mail.com
+                  integrationType: CHECKOUT
+                  merchantPostAuthUrl: https://merchant.openbanking.com/result
+                  creationDateTime: "2022-05-01T08:25:29.291Z"
+                  method: AIS
+                  status: COMPLETE
+                  data:
+                    name: John Leaf
+                  results: [
+                    {
+                    name: Jonathan Leaf,
+                    schemeName: IBAN,
+                    identification: GB02LOYD30909102094074,
+                    bic: LOYDGB21331,
+                    accountType: CACC,
+                    nameScore: 87},
+                    {
+                    name: John Leaf,
+                    schemeName: IBAN,
+                    iban: GB02LOYD30910860578168,
+                    bic: LOYDGB21045,
+                    accountType: CACC,
+                    nameScore: 100 }]
+                  links: []
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: {}
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: {}
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: {}
+        405:
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: {}
+        429:
+          description: Too Many Requests
+          headers:
+            Retry-After:
+              description: Number in seconds to wait
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: {}
+          x-sentenial:
+            enriched: "true"
+      security:
+      - MerchantOAuth2:
+        - verifications
+        - verifications_read
+      - MerchantApiKey: []
+    patch:
+      tags:
+        - Verification Service
+      summary: Set Consent and Submit
+      description: |-
+        Set consent and submit verification request Endpoint.
+        It is used to update verification with user's consent to retrieve accounts list and calculate the name matching score.
+      operationId: setConsentForVerificationUsingPATCH
+      parameters:
+        - name: verificationId
+          in: path
+          description: The ID of the verification for which Merchant want to update Consent.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Set Consent For Verification Request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetConsentVerificationRequest'
+        required: true
+      responses:
+        202:
+          description: Accepted
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: "VS0000"
+                returnDescription: Validation errors occurred. Please see details.
+                details:
+                  code: "VS0002"
+                  description: Field is invalid
+                  field: consentId
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        405:
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        415:
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+        422:
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example: { }
+        429:
+          description: Too Many Requests
+          headers:
+            Retry-After:
+              description: Number in seconds to wait
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                returnCode: null
+                returnDescription: null
+                details: null
+          x-sentenial:
+            enriched: 'true'
+      security:
+        - MerchantOAuth2:
+            - verifications
+        - MerchantApiKey: []
+components:
+  schemas:
+    Data:
+      required:
+        - name
+      type: object
+      properties: 
+        name:
+          type: string
+          description: Account Owner Name that is an input for comparison.
+          title: Verify Account Holder Name
+          minLength: 1
+          maxLength: 70
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        details:
+          type: array
+          description: Holds list of input validation errors.
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+        returnCode:
+          type: string
+          description: Error type code.
+        returnDescription:
+          type: string
+          description: Error type description.
+    ErrorDetail:
+      title: ErrorDetail
+      type: object
+      description: Holds list of input validation errors.
+      properties:
+        code:
+          type: string
+          description: Error code.
+        description:
+          type: string
+          description: Error description.
+        field:
+          type: string
+          description: JSON path to request object property the error is related to.
+        resourceUri:
+          type: string
+    PaginatedListVerificationResponseEnvelope:
+      type: object
+      properties:
+        uri:
+          type: string
+          description: Resource Uri.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationRequestResponse'
+        page:
+            $ref: '#/components/schemas/RestResponsePaginationDetails'
+        sort:
+            type: array
+            items:
+              type: string
+    RestResponsePaginationDetails:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          description: Page Number.
+          format: int32
+        pageSize:
+          type: integer
+          description: Page Size.
+          format: int32
+        totalElements:
+          type: integer
+          description: Total Number of elements returned. Response parameter only.
+          format: int32
+        totalPages:
+          type: integer
+          description: Total Number of pages returned. Response parameter only.
+          format: int32
+    RestResponseLink:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Encoded Id of linked resource.
+        resourceType:
+          type: string
+          description: Resource Type.
+        uri:
+          type: string
+          description: Resource URI.
+    Results:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Account holder name received from AIS.
+          minLength: 1
+          maxLength: 70
+        schemeName:
+          type: string
+          description: Name of the identification scheme, in a coded form as published in an external list.
+          enum:
+          - IBAN
+          - BBAN
+          - SortCodeAccountNumber
+        identification:
+          type: string
+          description: Identification assigned by an institution to identify an account. This identification is known by the account owner.
+          minLength: 1
+          maxLength: 34
+        bic:
+          type: string
+          description: BIC of account holding bank.
+          pattern: '[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}'
+        accountType:
+          type: string
+          description: ExternalCashAccountType1Code from ISO 20022. See https://www.iso20022.org/sites/default/files/2020-08/ExternalCodeSets_2Q2020_August2020_v1.xlsx 27-CashAccountType sheet.
+        nameScore:
+          type: integer
+          format: int32
+          description: Matching score calculated for name provided.
+          minimum: 0
+          maximum: 100
+    SetConsentVerificationRequest:
+      required:
+        - consentId
+      type: object
+      properties:
+        consentId:
+          type: string
+          description: Consent for verification given by the user.
+    VerificationRequestResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Verification Id.
+        userInterfaceVerificationId:
+          type: string
+          description: userInterfaceVerificationId, this is used in UI flows to get updates on the verification.
+        uri:
+         type: string
+         description:  Uri of the verification resource.
+        organisationId:
+          type: string
+          description: Id of the Merchant Organisation.
+        countryCode:
+          type: string
+          description: Country code - ISO country code - indicates where customer is domiciled (ISO 3166 Alpha-2).
+          pattern: ^[A-Z]{2}$
+        language:
+          type: string
+          description: The customer's preferred language, defaults to en ISO 639-1. Two-letter codes.
+          pattern: ^[a-z]{2}$
+        email:
+          type: string
+          description: Verified user email address.
+          minLength: 1
+          maxLength: 254
+          pattern: .*@.*
+        integrationType:
+          type: string
+          description: Allows to specify customer integration type. `CHECKOUT` and `REDIRECT` are the only options supported at the moment. Read more on Developer Docs.
+          enum:
+          - CHECKOUT
+          - REDIRECT
+        merchantPostAuthUrl:
+          type: string
+          description: The customer url to redirect verified user post authorization step. 
+          minLength: 1
+          maxLength: 255
+        creationDateTime:
+          type: string
+          description: Date and time when verification was started.
+          format: date-time
+        method:
+          type: string
+          description: Allows to specify preffered metod of verification. Available options are `AIS`.
+          enum:
+          - AIS
+        status:
+          type: string
+          description: The latest verification status.
+          enum:
+            - PENDING
+            - IN_PROGRESS
+            - COMPLETE
+            - FAILED
+        data:
+          $ref: '#/components/schemas/Data'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Results'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestResponseLink'
+    VerificationRequest:
+      required:
+        - data
+      type: object
+      properties:
+        countryCode:
+          type: string
+          description: countryCode - ISO country code - indicates where customer is domiciled (ISO 3166 Alpha-2).
+          pattern: ^[A-Z]{2}$
+        language:
+          type: string
+          description: the customers preferred language, defaults to en ISO 639-1.
+          pattern: ^[a-z]{2}$
+        email:
+          type: string
+          description: Verified user email address.
+          minLength: 1
+          maxLength: 254
+          pattern: .*@.*
+        integrationType:
+          type: string
+          description: Allows to specify if the UI integration type. The `CHECKOUT` and `REDIRECT` are the only suported type at the moment.
+          enum:
+          - CHECKOUT
+          - REDIRECT
+        merchantPostAuthUrl:
+          type: string
+          description: The merchant url to redirect verified user post authorization step.
+          minLength: 1
+          maxLength: 255
+        data:
+          $ref: '#/components/schemas/Data'
+        method:
+          type: string
+          description: Verification method. AIS is the only method supported at the moment.
+          enum:
+          - AIS
+      example:
+        countryCode: DE
+        language: en
+        email: john.leaf@mail.com
+        integrationType: CHECKOUT
+        merchantPostAuthUrl: https://merchant.openbanking.com/result
+        data:
+          name: John Leaf
+        method: AIS
+    VerificationRequestResponseEnvelope:
+      type: object
+      properties:
+        uri:
+          type: string
+          description: Resource Uri.
+        data:
+          $ref: '#/components/schemas/VerificationRequestResponse'
+  securitySchemes:
+    MerchantApiKey:
+      type: http
+      scheme: basic
+    MerchantOAuth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.nuapay.com/oauth/token_key
+          scopes:
+            verifications: Verification Service access
+    SystemOAuth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.nuapay.com/oauth/token_key
+          scopes:
+            verifications: Verification Service System access
