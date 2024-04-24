@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Nuapay Verification Service API Specification
-  description: Swagger Spec for the Nuapay TPP Verification Service.
+  description: Swagger Spec for the Verification Service.
   contact:
     name: Nuapay
     email: api.support@nuapay.com
@@ -17,12 +17,18 @@ servers:
 tags:
   - name: Verification Service
     description: |-
-      Verification Service is a Nuapay product that allows Merchant to verify provided account holder name with details delivered by ASPSP.
-      The Account Information endpoints allow a Merchant to,
-      - Initiate verification requests in Verification Service
-      - Update verification with user consent
-      - List initiated verifications with filtering
-      - Retrieve the verification results
+      Verification Service is a Nuapay product that allows Merchant to 
+    
+      1) Verify provided account holder name with details delivered by ASPSP via Open Banking AIS. Retrieve accounts for payouts and ensure the accounts are owned by the verified individual or business. Use `OPEN_BANKING_VERIFICATION` verification method to perform such verification.
+
+      2) Verify the name and account identification provided by business or individual  are  matching actual account holder name. Use `ACCOUNT_HOLDER_VERIFICATION` method to perform such verification.
+        The Verification endpoints will allow you to retrive information if the data you passed to be verified fully match the actual data held in the bank, partially match or does not match at all. 
+        
+        With the service customers can:
+        - Initiate verification requests
+        - Update verification with user consent granted as part Open Banking AIS flow  -  `OPEN_BANKING_VERIFICATION` specific.
+        - List initiated verifications
+        - Retrieve the verification results.
 paths:
   /verifications:
     get:
@@ -98,7 +104,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedListVerificationResponseEnvelope'
+               $ref: '#/components/schemas/PaginatedListVerificationResponseEnvelope'
               example:
                 uri: /verifications
                 data:
@@ -112,11 +118,67 @@ paths:
                    integrationType: CHECKOUT
                    merchantPostAuthUrl: https://merchant.openbanking.com/result
                    creationDateTime: "2022-05-01T08:25:29.291Z"
-                   method: AIS
+                   method: OPEN_BANKING_VERIFICATION
                    status: PENDING
-                   data:
+                   verificationData:
                     name: John Leaf
-                   results: null
+                   openBankingVerificationResults: null
+                   accountHolderVerificationResults: null
+                   links: []
+                 - id: ye27gry2dw
+                   userInterfaceVerificationId: 923e4567-e89b-12d3-a456-426614174000
+                   uri: /verifications/ye27gry2dw
+                   organisationId: ybo8z7vn2q
+                   countryCode: DE
+                   language: en
+                   email: john.leaf@mail.com
+                   integrationType: CHECKOUT
+                   merchantPostAuthUrl: https://merchant.openbanking.com/result
+                   creationDateTime: "2022-05-01T08:25:29.291Z"
+                   method: OPEN_BANKING_VERIFICATION
+                   status: COMPLETE
+                   verificationData:
+                     name: John Leaf
+                   openBankingVerificationResults: 
+                     - name: Jonathan Leaf
+                       schemeName: IBAN
+                       identification: GB02LOYD30909102094074
+                       bic: LOYDGB21331
+                       accountType: CACC
+                       nameScore: 87
+                     - name: John Leaf
+                       schemeName: IBAN
+                       iban: GB02LOYD30910860578168
+                       bic: LOYDGB21045
+                       accountType: CACC
+                       nameScore: 100
+                   accountHolderVerificationResults: null
+                   links: []
+                 - id: ye27gry2dw
+                   userInterfaceVerificationId: 923e4567-e89b-12d3-a456-426614174000
+                   uri: /verifications/ye27gry2dw
+                   organisationId: ybo8z7vn2q
+                   countryCode: DE
+                   language: en
+                   email: john.leaf@mail.com
+                   integrationType: CHECKOUT
+                   merchantPostAuthUrl: https://merchant.openbanking.com/result
+                   creationDateTime: "2022-05-01T08:25:29.291Z"
+                   method: ACCOUNT_HOLDER_VERIFICATION
+                   status: COMPLETE
+                   verificationData:
+                     name: Johnathan Leaf
+                     account:
+                        type: PERSONAL
+                        identification: 30000010000009
+                        schemeName: SortCodeAccountNumber
+                        secondaryIdentification: null
+                   openBankingVerificationResults: null
+                   accountHolderVerificationResults:
+                    type: PARTIAL_MATCH
+                    respondedName: John Leaf
+                    verificationScheme: UK_COP
+                    schemeResponseCodes: ["MBAM"]
                    links: []
                 page:
                    pageNumber: 1
@@ -217,9 +279,7 @@ paths:
       parameters:
         - name: Idempotency-Key
           in: header
-          description: |-
-            Every request will be processed only once per Idempotency-Key.
-            The Idempotency Key will be valid for 24 hours.
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
           schema:
             type: string
           x-sentenial:
@@ -251,11 +311,11 @@ paths:
                  integrationType: CHECKOUT
                  merchantPostAuthUrl: https://merchant.openbanking.com/result
                  creationDateTime: "2022-05-01T08:25:29.291Z"
-                 method: AIS
+                 method: OPEN_BANKING_VERIFICATION
                  status: PENDING
-                 data:
+                 verificationData:
                   name: John Leaf
-                 results: {}
+                 openBankingVerificationResults: []
                  links: []
         400:
           description: Bad request
@@ -378,25 +438,24 @@ paths:
                   integrationType: CHECKOUT
                   merchantPostAuthUrl: https://merchant.openbanking.com/result
                   creationDateTime: "2022-05-01T08:25:29.291Z"
-                  method: AIS
+                  method: OPEN_BANKING_VERIFICATION
                   status: COMPLETE
-                  data:
+                  varificationData:
                     name: John Leaf
-                  results: [
-                    {
-                    name: Jonathan Leaf,
-                    schemeName: IBAN,
-                    identification: GB02LOYD30909102094074,
-                    bic: LOYDGB21331,
-                    accountType: CACC,
-                    nameScore: 87},
-                    {
-                    name: John Leaf,
-                    schemeName: IBAN,
-                    iban: GB02LOYD30910860578168,
-                    bic: LOYDGB21045,
-                    accountType: CACC,
-                    nameScore: 100 }]
+                  openBankingVerificationResults:
+                    - name: John Leaf
+                      schemeName: IBAN
+                      identification: GB02LOYD30909102094074
+                      bic: LOYDGB21331
+                      accountType: CACC
+                      nameScore: 87
+                    - name: John Leaf
+                      schemeName: IBAN
+                      iban: GB02LOYD30910860578168
+                      bic: LOYDGB21045
+                      accountType: CACC
+                      nameScore: 100
+                  accountHolderVerificationResults: null
                   links: []
         401:
           description: Unauthorized
@@ -565,7 +624,7 @@ paths:
         - MerchantApiKey: []
 components:
   schemas:
-    Data:
+    VerificationData:
       required:
         - name
       type: object
@@ -576,35 +635,68 @@ components:
           title: Verify Account Holder Name
           minLength: 1
           maxLength: 70
+        account:
+          $ref: '#/components/schemas/Account'
+    Account:
+      type: object
+      description: Account object is conditionally required if verification method is `ACCOUNT_HOLDER_VERIFICATION`
+      required:
+        - identification
+        - schemeName
+        - type
+      properties:
+        type:
+          type: string
+          description: Type of Account Holder. Indicates whether the account holder is a person or an business organisation.
+          enum:
+            - PERSONAL
+            - BUSINESS
+        identification:
+          type: string
+          description: Identification assigned by an institution to identify an account. This identification is known by the account owner.
+          minLength: 1
+          maxLength: 34     
+        schemeName:
+          type: string
+          description: Name of the identification scheme, in a coded form as published in an external list.
+          enum:
+            - IBAN
+            - SortCodeAccountNumber
+        secondaryIdentification:
+          type: string
+          description: Identification assigned by an institution to identify an account.
+            This identification is known by the account owner.
+          minLength: 1
+          maxLength: 34
     ErrorResponse:
       title: ErrorResponse
       type: object
       properties:
         details:
           type: array
-          description: Holds list of input validation errors.
+          description: Holds list of input validation errors
           items:
             $ref: '#/components/schemas/ErrorDetail'
         returnCode:
           type: string
-          description: Error type code.
+          description: Error type code
         returnDescription:
           type: string
-          description: Error type description.
+          description: Error type description
     ErrorDetail:
       title: ErrorDetail
       type: object
-      description: Holds list of input validation errors.
+      description: Holds list of input validation errors
       properties:
         code:
           type: string
-          description: Error code.
+          description: Error code
         description:
           type: string
-          description: Error description.
+          description: Error description
         field:
           type: string
-          description: JSON path to request object property the error is related to.
+          description: JSON path to request object property the error is related to
         resourceUri:
           type: string
     PaginatedListVerificationResponseEnvelope:
@@ -628,38 +720,38 @@ components:
       properties:
         pageNumber:
           type: integer
-          description: Page Number.
+          description: Page Number
           format: int32
         pageSize:
           type: integer
-          description: Page Size.
+          description: Page Size
           format: int32
         totalElements:
           type: integer
-          description: Total Number of elements returned. Response parameter only.
+          description: Total Number of elements returned. Response parameter only
           format: int32
         totalPages:
           type: integer
-          description: Total Number of pages returned. Response parameter only.
+          description: Total Number of pages returned. Response parameter only
           format: int32
     RestResponseLink:
       type: object
       properties:
         id:
           type: string
-          description: Encoded Id of linked resource.
+          description: Encoded Id of linked resource
         resourceType:
           type: string
-          description: Resource Type.
+          description: Resource Type
         uri:
           type: string
-          description: Resource URI.
-    Results:
+          description: Resource URI
+    OpenBankingVerificationResults:
       type: object
       properties:
         name:
           type: string
-          description: Account holder name received from AIS.
+          description: Account holder name received from OPEN_BANKING_VERIFICATION.
           minLength: 1
           maxLength: 70
         schemeName:
@@ -689,12 +781,18 @@ components:
           maximum: 100
     SetConsentVerificationRequest:
       required:
-        - consentId
       type: object
       properties:
         consentId:
           type: string
           description: Consent for verification given by the user.
+        userDecision:
+          type: string
+          description: Set user descision for Account Verification
+          enum:
+          - usedNameEnteredByUser
+          - usedNameRecievedFromBank
+          - cancelled
     VerificationRequestResponse:
       type: object
       properties:
@@ -741,9 +839,10 @@ components:
           format: date-time
         method:
           type: string
-          description: Allows to specify preffered metod of verification. Available options are `AIS`.
+          description: Verification method.
           enum:
-          - AIS
+          - OPEN_BANKING_VERIFICATION
+          - ACCOUNT_HOLDER_VERIFICATION
         status:
           type: string
           description: The latest verification status.
@@ -752,19 +851,21 @@ components:
             - IN_PROGRESS
             - COMPLETE
             - FAILED
-        data:
-          $ref: '#/components/schemas/Data'
-        results:
+        verificationData:
+          $ref: '#/components/schemas/VerificationData'
+        openBankingVerificationResults:
           type: array
           items:
-            $ref: '#/components/schemas/Results'
+            $ref: '#/components/schemas/OpenBankingVerificationResults'
+        accountHolderVerificationResults:
+          $ref: '#/components/schemas/AccountHolderVerificationResults'
         links:
           type: array
           items:
             $ref: '#/components/schemas/RestResponseLink'
     VerificationRequest:
       required:
-        - data
+        - verificationData
       type: object
       properties:
         countryCode:
@@ -792,22 +893,24 @@ components:
           description: The merchant url to redirect verified user post authorization step.
           minLength: 1
           maxLength: 255
-        data:
-          $ref: '#/components/schemas/Data'
+        verificationData:
+          $ref: '#/components/schemas/VerificationData'
         method:
           type: string
-          description: Verification method. AIS is the only method supported at the moment.
+          description: Verification method. Defaults to `ACCOUNT_HOLDER_VERIFICATION` if not provided.
+          default: ACCOUNT_HOLDER_VERIFICATION
           enum:
-          - AIS
+          - OPEN_BANKING_VERIFICATION
+          - ACCOUNT_HOLDER_VERIFICATION
       example:
         countryCode: DE
         language: en
         email: john.leaf@mail.com
         integrationType: CHECKOUT
         merchantPostAuthUrl: https://merchant.openbanking.com/result
-        data:
+        verificationData:
           name: John Leaf
-        method: AIS
+        method: OPEN_BANKING_VERIFICATION
     VerificationRequestResponseEnvelope:
       type: object
       properties:
@@ -816,6 +919,40 @@ components:
           description: Resource Uri.
         data:
           $ref: '#/components/schemas/VerificationRequestResponse'
+    AccountHolderVerificationResults:
+      type: object
+      required:
+        - type
+        - verificationScheme
+      properties:
+        type: 
+          type: string
+          description: Verification result type
+          enum:
+            - FULL_MATCH
+            - PARTIAL_MATCH
+            - NO_MATCH
+            - UNABLE_TO_MATCH
+        respondedName:
+          type: string
+          description:  Returned only in case of `PARTIAL_MATCH`. Return actual Account Holder name. 
+        verificationScheme:
+          type: string
+          description: Account Verification scheme used. 
+          enum: 
+            - UK_COP
+        schemeResponseCodes:
+          type: array
+          description: List of response codes returned by the verification scheme. 
+          items: 
+            type: string   
+        userDecision:
+          type: string
+          description: Return user descision for Account Verification
+          enum:
+          - usedNameEnteredByUser
+          - usedNameRecievedFromBank
+          - cancelled               
   securitySchemes:
     MerchantApiKey:
       type: http
