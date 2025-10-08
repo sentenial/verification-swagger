@@ -8,7 +8,7 @@ info:
   license:
     name: Nuapay
     url: https://sentenial.com
-  version: 1.0.0
+  version: 1.6.1
   x-logo:
     backgroundColor: '#FFFFFF'
     url: https://www.nuapay.com/wp-content/uploads/2018/04/nuapay.svg
@@ -18,17 +18,23 @@ tags:
   - name: Verification Service
     description: |-
       Verification Service is a Nuapay product that allows Merchant to 
-    
-      1) Verify provided account holder name with details delivered by ASPSP via Open Banking AIS. Retrieve accounts for payouts and ensure the accounts are owned by the verified individual or business. Use `OPEN_BANKING_VERIFICATION` verification method to perform such verification.
+      
 
-      2) Verify the name and account identification provided by business or individual  are  matching actual account holder name. Use `ACCOUNT_HOLDER_VERIFICATION` method to perform such verification.
-        The Verification endpoints will allow you to retrive information if the data you passed to be verified fully match the actual data held in the bank, partially match or does not match at all. 
-        
+
+      1) Verify the name and account identification provided by business or individual  are  matching actual account holder name. Use 'ACCOUNT_HOLDER_VERIFICATION` method to perform such verification.
+        The Verification endpoints will allow you to retrieve information if the data you passed to be verified fully match the actual data held in the bank, partially match or does not match at all.
+
+      2) Verify provided account holder name with details delivered by ASPSP via Open Banking AIS. Retrieve accounts for payouts and ensure the accounts are owned by the verified individual or business. Use `OPEN_BANKING_VERIFICATION` verification method to perform such verification.
+
         With the service customers can:
         - Initiate verification requests
         - Update verification with user consent granted as part Open Banking AIS flow  -  `OPEN_BANKING_VERIFICATION` specific.
         - List initiated verifications
         - Retrieve the verification results.
+        
+        Verification via Open Banking AIS will be **deprecated** in November 2025 so we recommend using CoP (for UK clients) or VoP as your verification method.
+
+
 paths:
   /verifications:
     get:
@@ -38,7 +44,7 @@ paths:
       description: |-
         Get Verification List Endpoint.
         It is used to list verifications that are initiated by Merchant.
-        List may be filtered by parameters and supports paination.
+        List may be filtered by parameters and supports pagination.
       operationId: getVerificationListUsingGET
       parameters:
         - name: fromdatetime
@@ -69,10 +75,10 @@ paths:
             items:
               type: string
               enum:
-              - PENDING
-              - IN_PROGRESS
-              - COMPLETE
-              - FAILED
+                - PENDING
+                - IN_PROGRESS
+                - COMPLETE
+                - FAILED
           required: false
         - name: name
           in: query
@@ -104,90 +110,118 @@ paths:
           content:
             application/json:
               schema:
-               $ref: '#/components/schemas/PaginatedListVerificationResponseEnvelope'
+                $ref: '#/components/schemas/PaginatedListVerificationResponseEnvelope'
               example:
                 uri: /verifications
                 data:
-                 - id: re27gry2dw
-                   userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
-                   uri: /verifications/re27gry2dw
-                   organisationId: ybo8z7vn2q
-                   countryCode: DE
-                   language: en
-                   email: john.leaf@mail.com
-                   integrationType: CHECKOUT
-                   merchantPostAuthUrl: https://merchant.openbanking.com/result
-                   creationDateTime: "2022-05-01T08:25:29.291Z"
-                   method: OPEN_BANKING_VERIFICATION
-                   status: PENDING
-                   verificationData:
-                    name: John Leaf
-                   openBankingVerificationResults: null
-                   accountHolderVerificationResults: null
-                   links: []
-                 - id: ye27gry2dw
-                   userInterfaceVerificationId: 923e4567-e89b-12d3-a456-426614174000
-                   uri: /verifications/ye27gry2dw
-                   organisationId: ybo8z7vn2q
-                   countryCode: DE
-                   language: en
-                   email: john.leaf@mail.com
-                   integrationType: CHECKOUT
-                   merchantPostAuthUrl: https://merchant.openbanking.com/result
-                   creationDateTime: "2022-05-01T08:25:29.291Z"
-                   method: OPEN_BANKING_VERIFICATION
-                   status: COMPLETE
-                   verificationData:
-                     name: John Leaf
-                   openBankingVerificationResults: 
-                     - name: Jonathan Leaf
-                       schemeName: IBAN
-                       identification: GB02LOYD30909102094074
-                       bic: LOYDGB21331
-                       accountType: CACC
-                       nameScore: 87
-                     - name: John Leaf
-                       schemeName: IBAN
-                       iban: GB02LOYD30910860578168
-                       bic: LOYDGB21045
-                       accountType: CACC
-                       nameScore: 100
-                   accountHolderVerificationResults: null
-                   links: []
-                 - id: ye27gry2dw
-                   userInterfaceVerificationId: 923e4567-e89b-12d3-a456-426614174000
-                   uri: /verifications/ye27gry2dw
-                   organisationId: ybo8z7vn2q
-                   countryCode: DE
-                   language: en
-                   email: john.leaf@mail.com
-                   integrationType: CHECKOUT
-                   merchantPostAuthUrl: https://merchant.openbanking.com/result
-                   creationDateTime: "2022-05-01T08:25:29.291Z"
-                   method: ACCOUNT_HOLDER_VERIFICATION
-                   status: COMPLETE
-                   verificationData:
-                     name: Johnathan Leaf
-                     account:
+                  - id: re27gry2dw
+                    userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
+                    uri: /verifications/re27gry2dw
+                    organisationId: ybo8z7vn2q
+                    countryCode: DE
+                    language: en
+                    email: john.leaf@mail.com
+                    integrationType: CHECKOUT
+                    merchantPostAuthUrl: https://merchant.openbanking.com/result
+                    creationDateTime: "2022-05-01T08:25:29.291Z"
+                    method: OPEN_BANKING_VERIFICATION
+                    status: PENDING
+                    verificationData:
+                      name: John Leaf
+                    openBankingVerificationResults: null
+                    accountHolderVerificationResults: null
+                    links: []
+                  - id: ye27gry2dw
+                    userInterfaceVerificationId: 923e4567-e89b-12d3-a456-426614174000
+                    uri: /verifications/ye27gry2dw
+                    organisationId: ybo8z7vn2q
+                    countryCode: DE
+                    language: en
+                    email: john.leaf@mail.com
+                    integrationType: CHECKOUT
+                    merchantPostAuthUrl: https://merchant.openbanking.com/result
+                    creationDateTime: "2022-05-01T08:25:29.291Z"
+                    method: OPEN_BANKING_VERIFICATION
+                    status: COMPLETE
+                    verificationData:
+                      name: John Leaf
+                    openBankingVerificationResults:
+                      - name: Jonathan Leaf
+                        schemeName: IBAN
+                        identification: GB02LOYD30909102094074
+                        bic: LOYDGB21331
+                        accountType: CACC
+                        nameScore: 87
+                      - name: John Leaf
+                        schemeName: IBAN
+                        iban: GB02LOYD30910860578168
+                        bic: LOYDGB21045
+                        accountType: CACC
+                        nameScore: 100
+                    accountHolderVerificationResults: null
+                    links: []
+                  - id: ye27gry2dw
+                    userInterfaceVerificationId: 923e4567-e89b-12d3-a456-426614174000
+                    uri: /verifications/ye27gry2dw
+                    organisationId: ybo8z7vn2q
+                    countryCode: DE
+                    language: en
+                    email: john.leaf@mail.com
+                    integrationType: CHECKOUT
+                    merchantPostAuthUrl: https://merchant.openbanking.com/result
+                    creationDateTime: "2022-05-01T08:25:29.291Z"
+                    method: ACCOUNT_HOLDER_VERIFICATION
+                    status: COMPLETE
+                    verificationData:
+                      name: Johnathan Leaf
+                      account:
                         type: PERSONAL
                         identification: 30000010000009
                         schemeName: SortCodeAccountNumber
                         secondaryIdentification: null
-                   openBankingVerificationResults: null
-                   accountHolderVerificationResults:
-                    type: PARTIAL_MATCH
-                    respondedName: John Leaf
-                    verificationScheme: UK_COP
-                    schemeResponseCodes: ["MBAM"]
-                   links: []
+                    openBankingVerificationResults: null
+                    accountHolderVerificationResults:
+                      type: PARTIAL_MATCH
+                      respondedName: John Leaf
+                      verificationScheme: UK_COP
+                      schemeResponseCodes: ["MBAM"]
+                      externalVerificationReference: FRBB253496
+                    links: []
+                  - id: ie27gry2dw
+                    userInterfaceVerificationId: 923e4567-e89b-12d3-a456-426614174000
+                    uri: /verifications/ye27gry2dw
+                    organisationId: ibo8z7vn2q
+                    countryCode: DE
+                    language: en
+                    email: john.leaf@mail.com
+                    integrationType: CHECKOUT
+                    merchantPostAuthUrl: https://merchant.openbanking.com/result
+                    creationDateTime: "2022-05-01T08:25:29.291Z"
+                    method: ACCOUNT_HOLDER_VERIFICATION
+                    status: COMPLETE
+                    verificationData:
+                      name: Johnathan Leaf
+                      account:
+                        type: PERSONAL
+                        identification: BE98963313750893
+                        schemeName: IBAN
+                        secondaryIdentification: null
+                        bic: AXABBE22
+                    openBankingVerificationResults: null
+                    accountHolderVerificationResults:
+                      type: FULL_MATCH
+                      verificationScheme: EPC_VOP
+                      schemeResponseCodes: ["MTCH"]
+                      externalVerificationReference: CDBB253496
+                    links: []
                 page:
-                   pageNumber: 1
-                   pageSize: 10
-                   totalElements: 1
-                   totalPages: 1
+                  pageNumber: 1
+                  pageSize: 10
+                  totalElements: 1
+                  totalPages: 1
                 sort: []
         400:
-          description: Bad request
+          description: Bad Request
           content:
             application/json:
               schema:
@@ -245,8 +279,8 @@ paths:
         429:
           description: Too Many Requests
           headers:
-            Retry-After:
-              description: Number in seconds to wait
+            X-Rate-Limit-Reset:
+              description: Number in seconds to wait before retrying request.
               schema:
                 type: integer
                 format: int32
@@ -265,7 +299,7 @@ paths:
             - verifications
         - MerchantApiKey: []
         - SystemOAuth2:
-          - verifications
+            - verifications
     post:
       tags:
         - Verification Service
@@ -273,7 +307,7 @@ paths:
       description: |-
         Verification Request Post Endpoint.
         It is used to initiate verification.
-        Initited verifications has PENDING status.
+        Initiated verifications has PENDING status.
         In this status verification results are not available yet.
       operationId: verifyUsingPOST
       parameters:
@@ -282,6 +316,9 @@ paths:
           description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
           schema:
             type: string
+            maxLength: 50
+            x-sentenial:
+              enriched: 'true'
           x-sentenial:
             enriched: 'true'
       requestBody:
@@ -290,6 +327,42 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/VerificationRequest'
+            examples:
+              accountHolderVerificationUKCOP:
+                value:
+                  countryCode: DE
+                  language: en
+                  email: john.leaf@mail.com
+                  integrationType: CHECKOUT
+                  merchantPostAuthUrl: https://merchant.openbanking.com/result
+                  verificationData:
+                    name: Johnathan Leaf
+                    account:
+                      type: PERSONAL
+                      identification: 30000010000009
+                      schemeName: SortCodeAccountNumber
+                      secondaryIdentification: null
+                  method: ACCOUNT_HOLDER_VERIFICATION
+              accountHolderVerificationVOP:
+                value:
+                  verificationData:
+                    name: Johnathan Leaf
+                    account:
+                      identification: DE98600501017898024442
+                      schemeName: IBAN
+                      secondaryIdentification: null
+                      bic: SOLADEST600
+                  method: ACCOUNT_HOLDER_VERIFICATION
+              openBankingVerification:
+                value:
+                  countryCode: DE
+                  language: en
+                  email: john.leaf@mail.com
+                  integrationType: CHECKOUT
+                  merchantPostAuthUrl: https://merchant.openbanking.com/result
+                  verificationData:
+                    name: John Leaf
+                  method: OPEN_BANKING_VERIFICATION
         required: true
       responses:
         201:
@@ -298,27 +371,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VerificationRequestResponseEnvelope'
-              example:
-                uri: /verifications
-                data:
-                 id: re27gry2dw
-                 userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
-                 uri: /verifications/re27gry2dw
-                 organisationId: ybo8z7vn2q
-                 countryCode: DE
-                 language: en
-                 email: john.leaf@mail.com
-                 integrationType: CHECKOUT
-                 merchantPostAuthUrl: https://merchant.openbanking.com/result
-                 creationDateTime: "2022-05-01T08:25:29.291Z"
-                 method: OPEN_BANKING_VERIFICATION
-                 status: PENDING
-                 verificationData:
-                  name: John Leaf
-                 openBankingVerificationResults: []
-                 links: []
+              examples:
+                OpenBankingVerificationResponse:
+                 value:
+                  uri: /verifications
+                  data:
+                    id: re27gry2dw
+                    uri: /verifications/re27gry2dw
+                    userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
+                    organisationId: ybo8z7vn2q
+                    countryCode: DE
+                    language: en
+                    email: john.leaf@mail.com
+                    integrationType: CHECKOUT
+                    merchantPostAuthUrl: https://merchant.openbanking.com/result
+                    creationDateTime: "2022-05-01T08:25:29.291Z"
+                    method: OPEN_BANKING_VERIFICATION
+                    status: PENDING
+                    verificationData:
+                      name: John Leaf
+                    openBankingVerificationResults: []
+                    links: []
+                AccountHolderVerificationResponse:
+                 value:
+                  uri: /verifications/z8b556xkbr
+                  data:
+                    id: z8b556xkbr
+                    uri: /verifications/z8b556xkbr
+                    userInterfaceVerificationId: 887c4108-efb0-4f04-8e61-150c63b0c001
+                    organisationId: a2ae6xj7bw
+                    countryCode: null
+                    language: en
+                    email: null
+                    integrationType: CHECKOUT
+                    merchantPostAuthUrl: null
+                    creationDateTime: '2025-10-08T12:44:30.681Z'
+                    method: ACCOUNT_HOLDER_VERIFICATION
+                    status: PENDING
+                    errors: null
+                    verificationData:
+                      name: Johnathan Leaf
+                      account:
+                        type: null
+                        identification: DE98600501017898024442
+                        schemeName: IBAN
+                        secondaryIdentification: null
+                        bic: SOLADEST600
+                    openBankingVerificationResults: null
+                    accountHolderVerificationResults: null
+                    links: null
         400:
-          description: Bad request
+          description: Bad Request
           content:
             application/json:
               schema:
@@ -383,8 +486,8 @@ paths:
         429:
           description: Too Many Requests
           headers:
-            Retry-After:
-              description: Number in seconds to wait
+            X-Rate-Limit-Reset:
+              description: Number in seconds to wait before retrying request.
               schema:
                 type: integer
                 format: int32
@@ -412,12 +515,12 @@ paths:
         It is used to retrieve verification details.
       operationId: getVerificationRequestUsingGET
       parameters:
-      - name: verificationId
-        in: path
-        description: Verification request ID
-        required: true
-        schema:
-          type: string
+        - name: verificationId
+          in: path
+          description: Verification request ID
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: OK
@@ -425,38 +528,106 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VerificationRequestResponseEnvelope'
-              example:
-                uri: /verifications/re27gry2dw
-                data:
-                  id: re27gry2dw
-                  userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
+              examples:
+                OpenBankingVerificationResponseExample:
+                 value:
                   uri: /verifications/re27gry2dw
-                  organisationId: ybo8z7vn2q
-                  countryCode: DE
-                  language: en
-                  email: john.leaf@mail.com
-                  integrationType: CHECKOUT
-                  merchantPostAuthUrl: https://merchant.openbanking.com/result
-                  creationDateTime: "2022-05-01T08:25:29.291Z"
-                  method: OPEN_BANKING_VERIFICATION
-                  status: COMPLETE
-                  varificationData:
-                    name: John Leaf
-                  openBankingVerificationResults:
-                    - name: John Leaf
-                      schemeName: IBAN
-                      identification: GB02LOYD30909102094074
-                      bic: LOYDGB21331
-                      accountType: CACC
-                      nameScore: 87
-                    - name: John Leaf
-                      schemeName: IBAN
-                      iban: GB02LOYD30910860578168
-                      bic: LOYDGB21045
-                      accountType: CACC
-                      nameScore: 100
-                  accountHolderVerificationResults: null
-                  links: []
+                  data:
+                    id: re27gry2dw
+                    userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
+                    uri: /verifications/re27gry2dw
+                    organisationId: ybo8z7vn2q
+                    countryCode: DE
+                    language: en
+                    email: john.leaf@mail.com
+                    integrationType: CHECKOUT
+                    merchantPostAuthUrl: https://merchant.openbanking.com/result
+                    creationDateTime: "2022-05-01T08:25:29.291Z"
+                    method: OPEN_BANKING_VERIFICATION
+                    status: COMPLETE
+                    verificationData:
+                      name: John Leaf
+                    openBankingVerificationResults:
+                      - name: John Leaf
+                        schemeName: IBAN
+                        identification: GB02LOYD30909102094074
+                        bic: LOYDGB21331
+                        accountType: CACC
+                        nameScore: 87
+                      - name: John Leaf
+                        schemeName: IBAN
+                        iban: GB02LOYD30910860578168
+                        bic: LOYDGB21045
+                        accountType: CACC
+                        nameScore: 100
+                    accountHolderVerificationResults: null
+                    links: []
+                AccountHolderVerificationResultComplete:
+                  value:
+                    uri: /verifications/6p2laey7bv
+                    data:
+                      id: 6p2laey7bv
+                      uri: /verifications/6p2laey7bv
+                      userInterfaceVerificationId: 3b4547cf-3123-4db3-9632-317b7a7d052e
+                      organisationId: a2ae6xj7bw
+                      countryCode: null
+                      language: en
+                      email: null
+                      integrationType: CHECKOUT
+                      merchantPostAuthUrl: null
+                      creationDateTime: '2025-10-08T13:24:10.301Z'
+                      method: ACCOUNT_HOLDER_VERIFICATION
+                      status: COMPLETE
+                      errors: null
+                      verificationData:
+                        name: Sonet Corporation
+                        account:
+                          type: null
+                          identification: FR7618979000010331194010195
+                          schemeName: IBAN
+                          secondaryIdentification: null
+                          bic: ABCOFRPPXXX
+                      openBankingVerificationResults: null
+                      accountHolderVerificationResults:
+                        type: PARTIAL_MATCH
+                        respondedName: Sonet Corporations
+                        verificationScheme: EPC_VOP
+                        schemeResponseCodes:
+                          - CMTC
+                        userDecision: null
+                        externalVerificationReference: PYFN15226997
+                      links: null
+                AccountHolderVerificationResultFailed:
+                  value:
+                   uri: /verifications/z8b556xkbr
+                   data:
+                     id: z8b556xkbr
+                     uri: /verifications/z8b556xkbr
+                     userInterfaceVerificationId: 887c4108-efb0-4f04-8e61-150c63b0c001
+                     organisationId: a2ae6xj7bw
+                     countryCode: null
+                     language: en
+                     email: null
+                     integrationType: CHECKOUT
+                     merchantPostAuthUrl: null
+                     creationDateTime: '2025-10-08T12:44:30.681Z'
+                     method: ACCOUNT_HOLDER_VERIFICATION
+                     status: FAILED
+                     errors:
+                       - code: B10013
+                         field: null
+                         description: The Payee Bank does not have an active Responder
+                     verificationData:
+                       name: Johnathan Leaf
+                       account:
+                         type: null
+                         identification: DE98600501017898024442
+                         schemeName: IBAN
+                         secondaryIdentification: null
+                         bic: SOLADEST600
+                     openBankingVerificationResults: null
+                     accountHolderVerificationResults: null
+                     links: null             
         401:
           description: Unauthorized
           content:
@@ -488,8 +659,8 @@ paths:
         429:
           description: Too Many Requests
           headers:
-            Retry-After:
-              description: Number in seconds to wait
+            X-Rate-Limit-Reset:
+              description: Number in seconds to wait before retrying request.
               schema:
                 type: integer
                 format: int32
@@ -501,10 +672,10 @@ paths:
           x-sentenial:
             enriched: "true"
       security:
-      - MerchantOAuth2:
-        - verifications
-        - verifications_read
-      - MerchantApiKey: []
+        - MerchantOAuth2:
+            - verifications
+            - verifications_read
+        - MerchantApiKey: []
     patch:
       tags:
         - Verification Service
@@ -512,7 +683,7 @@ paths:
       description: |-
         Set consent and submit verification request Endpoint.
         It is used to update verification with user's consent to retrieve accounts list and calculate the name matching score.
-      operationId: setConsentForVerificationUsingPATCH
+      operationId: setDetailsForVerificationUsingPATCH
       parameters:
         - name: verificationId
           in: path
@@ -531,7 +702,7 @@ paths:
         202:
           description: Accepted
         400:
-          description: Bad request
+          description: Bad Request
           content:
             application/json:
               schema:
@@ -603,8 +774,8 @@ paths:
         429:
           description: Too Many Requests
           headers:
-            Retry-After:
-              description: Number in seconds to wait
+            X-Rate-Limit-Reset:
+              description: Number in seconds to wait before retrying request.
               schema:
                 type: integer
                 format: int32
@@ -628,7 +799,7 @@ components:
       required:
         - name
       type: object
-      properties: 
+      properties:
         name:
           type: string
           description: Account Owner Name that is an input for comparison.
@@ -643,7 +814,6 @@ components:
       required:
         - identification
         - schemeName
-        - type
       properties:
         type:
           type: string
@@ -655,7 +825,7 @@ components:
           type: string
           description: Identification assigned by an institution to identify an account. This identification is known by the account owner.
           minLength: 1
-          maxLength: 34     
+          maxLength: 34
         schemeName:
           type: string
           description: Name of the identification scheme, in a coded form as published in an external list.
@@ -668,6 +838,10 @@ components:
             This identification is known by the account owner.
           minLength: 1
           maxLength: 34
+        bic:
+          pattern: "[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}"
+          type: string
+          description: Holding Entity BIC.  Required when an `IBAN` is provided and the country is not `GB`. Please provide the 11-character `BIC`; if you submit an 8-character `BIC`, the system will automatically append `XXX`.
     ErrorResponse:
       title: ErrorResponse
       type: object
@@ -699,6 +873,20 @@ components:
           description: JSON path to request object property the error is related to
         resourceUri:
           type: string
+    ErrorItem:
+      title: ErrorItem
+      type: object
+      description: Holds error information mapped from provider error
+      properties:
+        code:
+          type: string
+          description: Error code
+        field:
+          type: string
+          description: JSON path to request object property the error is related to
+        description:
+          type: string
+          description: Error description
     PaginatedListVerificationResponseEnvelope:
       type: object
       properties:
@@ -710,11 +898,11 @@ components:
           items:
             $ref: '#/components/schemas/VerificationRequestResponse'
         page:
-            $ref: '#/components/schemas/RestResponsePaginationDetails'
+          $ref: '#/components/schemas/RestResponsePaginationDetails'
         sort:
-            type: array
-            items:
-              type: string
+          type: array
+          items:
+            type: string
     RestResponsePaginationDetails:
       type: object
       properties:
@@ -758,9 +946,9 @@ components:
           type: string
           description: Name of the identification scheme, in a coded form as published in an external list.
           enum:
-          - IBAN
-          - BBAN
-          - SortCodeAccountNumber
+            - IBAN
+            - BBAN
+            - SortCodeAccountNumber
         identification:
           type: string
           description: Identification assigned by an institution to identify an account. This identification is known by the account owner.
@@ -787,11 +975,11 @@ components:
           description: Consent for verification given by the user.
         userDecision:
           type: string
-          description: Set user descision for Account Verification
+          description: Set user decision for Account Verification
           enum:
-          - usedNameEnteredByUser
-          - usedNameRecievedFromBank
-          - cancelled
+            - usedNameEnteredByUser
+            - usedNameReceivedFromBank
+            - cancelled
     VerificationRequestResponse:
       type: object
       properties:
@@ -802,8 +990,8 @@ components:
           type: string
           description: userInterfaceVerificationId, this is used in UI flows to get updates on the verification.
         uri:
-         type: string
-         description:  Uri of the verification resource.
+          type: string
+          description:  Uri of the verification resource.
         organisationId:
           type: string
           description: Id of the Merchant Organisation.
@@ -825,11 +1013,11 @@ components:
           type: string
           description: Allows to specify customer integration type. `CHECKOUT` and `REDIRECT` are the only options supported at the moment. Read more on Developer Docs.
           enum:
-          - CHECKOUT
-          - REDIRECT
+            - CHECKOUT
+            - REDIRECT
         merchantPostAuthUrl:
           type: string
-          description: The customer url to redirect verified user post authorization step. 
+          description: The customer url to redirect verified user post authorization step.
           minLength: 1
           maxLength: 255
         creationDateTime:
@@ -840,8 +1028,8 @@ components:
           type: string
           description: Verification method.
           enum:
-          - OPEN_BANKING_VERIFICATION
-          - ACCOUNT_HOLDER_VERIFICATION
+            - ACCOUNT_HOLDER_VERIFICATION
+            - OPEN_BANKING_VERIFICATION
         status:
           type: string
           description: The latest verification status.
@@ -850,6 +1038,11 @@ components:
             - IN_PROGRESS
             - COMPLETE
             - FAILED
+        errors:
+          type: array
+          description: FAILED verification errors
+          items:
+            $ref: '#/components/schemas/ErrorItem'
         verificationData:
           $ref: '#/components/schemas/VerificationData'
         openBankingVerificationResults:
@@ -883,10 +1076,10 @@ components:
           pattern: .*@.*
         integrationType:
           type: string
-          description: Allows to specify if the UI integration type. The `CHECKOUT` and `REDIRECT` are the only suported type at the moment.
+          description: Allows to specify if the UI integration type. The `CHECKOUT` and `REDIRECT` are the only supported type at the moment.
           enum:
-          - CHECKOUT
-          - REDIRECT
+            - CHECKOUT
+            - REDIRECT
         merchantPostAuthUrl:
           type: string
           description: The merchant url to redirect verified user post authorization step.
@@ -899,17 +1092,8 @@ components:
           description: Verification method. Defaults to `ACCOUNT_HOLDER_VERIFICATION` if not provided.
           default: ACCOUNT_HOLDER_VERIFICATION
           enum:
-          - OPEN_BANKING_VERIFICATION
-          - ACCOUNT_HOLDER_VERIFICATION
-      example:
-        countryCode: DE
-        language: en
-        email: john.leaf@mail.com
-        integrationType: CHECKOUT
-        merchantPostAuthUrl: https://merchant.openbanking.com/result
-        verificationData:
-          name: John Leaf
-        method: OPEN_BANKING_VERIFICATION
+            - OPEN_BANKING_VERIFICATION
+            - ACCOUNT_HOLDER_VERIFICATION
     VerificationRequestResponseEnvelope:
       type: object
       properties:
@@ -924,7 +1108,7 @@ components:
         - type
         - verificationScheme
       properties:
-        type: 
+        type:
           type: string
           description: Verification result type
           enum:
@@ -934,24 +1118,28 @@ components:
             - UNABLE_TO_MATCH
         respondedName:
           type: string
-          description:  Returned only in case of `PARTIAL_MATCH`. Return actual Account Holder name. 
+          description:  Returned only in case of `PARTIAL_MATCH`. Return actual Account Holder name.
         verificationScheme:
           type: string
-          description: Account Verification scheme used. 
-          enum: 
+          description: Account Verification scheme used.
+          enum:
             - UK_COP
+            - EPC_VOP
         schemeResponseCodes:
           type: array
-          description: List of response codes returned by the verification scheme. 
-          items: 
-            type: string   
+          description: List of response codes returned by the verification scheme.
+          items:
+            type: string
         userDecision:
           type: string
-          description: Return user descision for Account Verification
+          description: Return user decision for Account Verification
           enum:
-          - usedNameEnteredByUser
-          - usedNameRecievedFromBank
-          - cancelled               
+            - usedNameEnteredByUser
+            - usedNameReceivedFromBank
+            - cancelled
+        externalVerificationReference:
+          type: string
+          description: Unique verification request reference.
   securitySchemes:
     MerchantApiKey:
       type: http
