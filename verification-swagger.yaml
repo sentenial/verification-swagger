@@ -529,39 +529,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/VerificationRequestResponseEnvelope'
               examples:
-                OpenBankingVerificationResponseExample:
-                 value:
-                  uri: /verifications/re27gry2dw
-                  data:
-                    id: re27gry2dw
-                    userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
-                    uri: /verifications/re27gry2dw
-                    organisationId: ybo8z7vn2q
-                    countryCode: DE
-                    language: en
-                    email: john.leaf@mail.com
-                    integrationType: CHECKOUT
-                    merchantPostAuthUrl: https://merchant.openbanking.com/result
-                    creationDateTime: "2022-05-01T08:25:29.291Z"
-                    method: OPEN_BANKING_VERIFICATION
-                    status: COMPLETE
-                    verificationData:
-                      name: John Leaf
-                    openBankingVerificationResults:
-                      - name: John Leaf
-                        schemeName: IBAN
-                        identification: GB02LOYD30909102094074
-                        bic: LOYDGB21331
-                        accountType: CACC
-                        nameScore: 87
-                      - name: John Leaf
-                        schemeName: IBAN
-                        iban: GB02LOYD30910860578168
-                        bic: LOYDGB21045
-                        accountType: CACC
-                        nameScore: 100
-                    accountHolderVerificationResults: null
-                    links: []
                 AccountHolderVerificationResultComplete:
                   value:
                     uri: /verifications/6p2laey7bv
@@ -628,6 +595,39 @@ paths:
                      openBankingVerificationResults: null
                      accountHolderVerificationResults: null
                      links: null             
+                OpenBankingVerificationResponseExample:
+                 value:
+                  uri: /verifications/re27gry2dw
+                  data:
+                    id: re27gry2dw
+                    userInterfaceVerificationId: 123e4567-e89b-12d3-a456-426614174000
+                    uri: /verifications/re27gry2dw
+                    organisationId: ybo8z7vn2q
+                    countryCode: DE
+                    language: en
+                    email: john.leaf@mail.com
+                    integrationType: CHECKOUT
+                    merchantPostAuthUrl: https://merchant.openbanking.com/result
+                    creationDateTime: "2022-05-01T08:25:29.291Z"
+                    method: OPEN_BANKING_VERIFICATION
+                    status: COMPLETE
+                    verificationData:
+                      name: John Leaf
+                    openBankingVerificationResults:
+                      - name: John Leaf
+                        schemeName: IBAN
+                        identification: GB02LOYD30909102094074
+                        bic: LOYDGB21331
+                        accountType: CACC
+                        nameScore: 87
+                      - name: John Leaf
+                        schemeName: IBAN
+                        iban: GB02LOYD30910860578168
+                        bic: LOYDGB21045
+                        accountType: CACC
+                        nameScore: 100
+                    accountHolderVerificationResults: null
+                    links: []
         401:
           description: Unauthorized
           content:
